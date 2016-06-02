@@ -1,0 +1,35 @@
+<idea-plugin version="2">
+  <id>net.codestats.plugin.atom.intellij</id>
+  <name>Code::Stats</name>
+  <version>0.1</version>
+  <vendor email="mikko.ahlroth@gmail.com" url="https://codestats.net/">CodeStats</vendor>
+
+  <description><![CDATA[
+      Code::Stats plugin for the IntelliJ/JetBrains range of IDEs.
+    ]]></description>
+
+  <change-notes><![CDATA[
+
+    ]]>
+  </change-notes>
+
+  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
+  <idea-version since-build="145.0"/>
+
+  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+       on how to target different products -->
+  <depends>com.intellij.modules.lang</depends>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <applicationConfigurable instance="SettingsForm"/>
+  </extensions>
+
+  <actions>
+  </actions>
+
+  <application-components>
+    <component>
+      <implementation-class>StatsCollector</implementation-class>
+    </component>
+  </application-components>
+</idea-plugin>
