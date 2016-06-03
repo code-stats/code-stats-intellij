@@ -16,6 +16,8 @@ public class SettingsForm implements Configurable {
     public static String API_KEY_NAME = CONFIG_PREFIX + "api-key";
     public static String API_URL_NAME = CONFIG_PREFIX + "api-url";
 
+    public static String DEFAULT_API_URL = "https://codestats.net/api/my/pulses";
+
     private JPanel ui;
     private JTextField apiKey;
     private JTextField apiURL;
@@ -41,10 +43,10 @@ public class SettingsForm implements Configurable {
         propertiesComponent = PropertiesComponent.getInstance();
 
         persistedApiKey = propertiesComponent.getValue(API_KEY_NAME);
-        persistedApiURL = propertiesComponent.getValue(API_URL_NAME, "https://codestats.net/api/my/pulses");
+        persistedApiURL = propertiesComponent.getValue(API_URL_NAME, DEFAULT_API_URL);
 
         if (persistedApiURL.equals("")) {
-            persistedApiURL = "https://codestats.net/api/my/pulses";
+            persistedApiURL = DEFAULT_API_URL;
         }
 
         SwingUtilities.invokeLater(() -> {

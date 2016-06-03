@@ -1,7 +1,7 @@
 <idea-plugin version="2">
   <id>net.codestats.plugin.atom.intellij</id>
   <name>Code::Stats</name>
-  <version>0.1</version>
+  <version>1.0</version>
   <vendor email="mikko.ahlroth@gmail.com" url="https://codestats.net/">CodeStats</vendor>
 
   <description><![CDATA[

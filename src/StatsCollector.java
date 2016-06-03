@@ -4,6 +4,11 @@ import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.editor.actionSystem.EditorActionManager;
 import com.intellij.openapi.editor.actionSystem.TypedAction;
 import com.intellij.openapi.editor.actionSystem.TypedActionHandler;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.project.ProjectManagerListener;
+import com.intellij.openapi.wm.IdeFrame;
+import com.intellij.openapi.wm.WindowManager;
 import org.jetbrains.annotations.NotNull;
 
 import javax.net.ssl.SSLContext;
@@ -40,14 +45,42 @@ public class StatsCollector implements ApplicationComponent {
     private String apiURL;
     private String apiKey;
 
+    private StatusBarIcon statusBarIcon;
+
     public StatsCollector() {
         propertiesComponent = PropertiesComponent.getInstance();
+    }
+
+    @Override
+    public void initComponent() {
         apiKey = propertiesComponent.getValue(SettingsForm.API_KEY_NAME);
         apiURL = propertiesComponent.getValue(SettingsForm.API_URL_NAME);
 
         executor = Executors.newScheduledThreadPool(1);
         xps = new Hashtable<>();
 
+        // Add the status bar icon to the statusbar of all projects when they are loaded
+        statusBarIcon = new StatusBarIcon();
+        ProjectManager.getInstance().addProjectManagerListener(new ProjectManagerListener() {
+            @Override
+            public void projectOpened(Project project) {
+                IdeFrame frame = WindowManager.getInstance().getIdeFrame(project);
+                frame.getStatusBar().addWidget(statusBarIcon);
+            }
+
+            @Override
+            public boolean canCloseProject(Project project) {
+                return true;
+            }
+
+            @Override
+            public void projectClosed(Project project) {}
+
+            @Override
+            public void projectClosing(Project project) {}
+        });
+
+        // Set up keyhandler that will send us keypresses
         final EditorActionManager actionManager = EditorActionManager.getInstance();
         final TypedAction typedAction = actionManager.getTypedAction();
         final TypedActionHandler oldHandler = typedAction.getHandler();
@@ -58,11 +91,6 @@ public class StatsCollector implements ApplicationComponent {
         typedAction.setupHandler(handler);
 
         installLECACert();
-    }
-
-    @Override
-    public void initComponent() {
-        // TODO: insert component initialization logic here
     }
 
     @Override
@@ -102,6 +130,7 @@ public class StatsCollector implements ApplicationComponent {
         task.setXpsLock(xps_lock);
         task.setXps(xps);
         task.setConfig(apiURL, apiKey);
+        task.setStatusBarIcon(statusBarIcon);
         updateTimer = executor.schedule(task, UPDATE_TIMER, TimeUnit.SECONDS);
     }
 
@@ -113,6 +142,9 @@ public class StatsCollector implements ApplicationComponent {
     // Code::Stats is using a Let's Encrypt certificate which Java does not trust by default.
     // We need to add the bundled LE root CA certificate to the trust store before we can send any calls to the server.
     // See: http://stackoverflow.com/a/34111150
+
+    // Both ISRG root X1 and DST root X3 are added, because we might not know which one has signed our LE certificate in
+    // the future.
     private void installLECACert() {
         try {
             KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -123,7 +155,15 @@ public class StatsCollector implements ApplicationComponent {
 
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             try (InputStream caInput = new BufferedInputStream(
-                    // this files is shipped with the application
+                    StatsCollector.class.getResourceAsStream("dstrootx3real.der"))) {
+                Certificate crt = cf.generateCertificate(caInput);
+                System.out.println("Added Cert for " + ((X509Certificate) crt)
+                        .getSubjectDN());
+
+                keyStore.setCertificateEntry("DST root CA X3", crt);
+            }
+
+            try (InputStream caInput = new BufferedInputStream(
                     StatsCollector.class.getResourceAsStream("isrgrootx1.der"))) {
                 Certificate crt = cf.generateCertificate(caInput);
                 System.out.println("Added Cert for " + ((X509Certificate) crt)

@@ -20,10 +20,18 @@ public class UpdateTask implements Runnable {
     private Object xpsLock;
     private String apiURL;
     private String apiKey;
+    private StatusBarIcon statusBarIcon;
 
     @Override
     public void run() {
+        statusBarIcon.setUpdating();
+
         try {
+            // Sometimes after some combination of user action, the API URL ends up as an empty string, guard against it
+            if (apiURL == null || apiURL.equals("")) {
+                apiURL = SettingsForm.DEFAULT_API_URL;
+            }
+
             final URL API_URL = new URL(apiURL);
             final String API_TOKEN = apiKey;
 
@@ -59,10 +67,13 @@ public class UpdateTask implements Runnable {
                 synchronized (xpsLock) {
                     xps.clear();
                 }
+
+                statusBarIcon.clear();
             }
 
         } catch (IOException e) {
             e.printStackTrace();
+            statusBarIcon.setError(e.toString());
         }
     }
 
@@ -77,5 +88,9 @@ public class UpdateTask implements Runnable {
     public void setConfig(final String apiURL, final String apiKey) {
         this.apiURL = apiURL;
         this.apiKey = apiKey;
+    }
+
+    public void setStatusBarIcon(StatusBarIcon statusBarIcon) {
+        this.statusBarIcon = statusBarIcon;
     }
 }
