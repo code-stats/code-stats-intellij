@@ -1,6 +1,7 @@
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
+import com.intellij.openapi.project.Project;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -20,11 +21,11 @@ public class UpdateTask implements Runnable {
     private Object xpsLock;
     private String apiURL;
     private String apiKey;
-    private StatusBarIcon statusBarIcon;
+    private Hashtable<Project, StatusBarIcon> statusBarIcons;
 
     @Override
     public void run() {
-        statusBarIcon.setUpdating();
+        statusBarIcons.values().forEach(StatusBarIcon::setUpdating);
 
         try {
             // Sometimes after some combination of user action, the API URL ends up as an empty string, guard against it
@@ -68,12 +69,14 @@ public class UpdateTask implements Runnable {
                     xps.clear();
                 }
 
-                statusBarIcon.clear();
+                statusBarIcons.values().forEach(StatusBarIcon::clear);
             }
 
         } catch (IOException e) {
             e.printStackTrace();
-            statusBarIcon.setError(e.toString());
+            for (StatusBarIcon statusBarIcon : statusBarIcons.values()) {
+                statusBarIcon.setError(e.toString());
+            }
         }
     }
 
@@ -90,7 +93,7 @@ public class UpdateTask implements Runnable {
         this.apiKey = apiKey;
     }
 
-    public void setStatusBarIcon(StatusBarIcon statusBarIcon) {
-        this.statusBarIcon = statusBarIcon;
+    public void setStatusBarIcons(Hashtable<Project, StatusBarIcon> statusBarIcons) {
+        this.statusBarIcons = statusBarIcons;
     }
 }

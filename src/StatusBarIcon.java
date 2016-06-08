@@ -12,9 +12,10 @@ import java.awt.event.MouseEvent;
  * Created by nicd on 03/06/16.
  */
 public class StatusBarIcon implements StatusBarWidget {
-    public static final String STATUS_BAR_ID = "code-stats-intellij-status-bar-icon";
+    public static final String STATUS_BAR_ID_PREFIX = "code-stats-intellij-status-bar-icon-";
 
     private class StatusBarPresentation implements TextPresentation {
+
         private String text = "C::S";
         private String tooltipText = null;
 
@@ -56,16 +57,20 @@ public class StatusBarIcon implements StatusBarWidget {
         }
     }
 
+    private String ID;
     private StatusBarPresentation statusBarPresentation;
+    private StatusBar statusBar;
 
-    StatusBarIcon() {
+    StatusBarIcon(final String ID, final StatusBar statusBar) {
+        this.ID = STATUS_BAR_ID_PREFIX + ID;
         statusBarPresentation = new StatusBarPresentation();
+        this.statusBar = statusBar;
     }
 
     @NotNull
     @Override
     public String ID() {
-        return STATUS_BAR_ID;
+        return ID;
     }
 
     @Nullable
@@ -85,28 +90,31 @@ public class StatusBarIcon implements StatusBarWidget {
     }
 
     public void setUpdating() {
-        statusBarPresentation.setText("C::S...");
-        statusBarPresentation.setToolTipText("Updating...");
-        updateStatusBars();
+        if (statusBarPresentation != null) {
+            statusBarPresentation.setText("C::S…");
+            statusBarPresentation.setToolTipText("Updating…");
+            updateStatusBars();
+        }
     }
 
     public void setError(final String error) {
-        statusBarPresentation.setText("C::S ERR!");
-        statusBarPresentation.setToolTipText("An error occurred:\n" + error);
-        updateStatusBars();
+        if (statusBarPresentation != null) {
+            statusBarPresentation.setText("C::S ERR!");
+            statusBarPresentation.setToolTipText("An error occurred:\n" + error);
+            updateStatusBars();
+        }
     }
 
     public void clear() {
-        statusBarPresentation.setText("C::S");
-        statusBarPresentation.setToolTipText(null);
-        updateStatusBars();
+        if (statusBarPresentation != null) {
+            statusBarPresentation.setText("C::S");
+            statusBarPresentation.setToolTipText(null);
+            updateStatusBars();
+        }
     }
 
     private void updateStatusBars() {
-        // Trigger repaint on all status bars
-        IdeFrame[] frames = WindowManager.getInstance().getAllProjectFrames();
-        for (IdeFrame frame : frames) {
-            frame.getStatusBar().updateWidget(STATUS_BAR_ID);
-        }
+        // Trigger repaint on this icon's statusbar
+        statusBar.updateWidget(ID);
     }
 }

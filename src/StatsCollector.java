@@ -8,6 +8,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.wm.IdeFrame;
+import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
 import org.jetbrains.annotations.NotNull;
 
@@ -45,10 +46,13 @@ public class StatsCollector implements ApplicationComponent {
     private String apiURL;
     private String apiKey;
 
-    private StatusBarIcon statusBarIcon;
+    private Integer statusBarUniqueID;
+    private Hashtable<Project, StatusBarIcon> statusBarIcons;
 
     public StatsCollector() {
         propertiesComponent = PropertiesComponent.getInstance();
+        statusBarIcons = new Hashtable<>();
+        statusBarUniqueID = 0;
     }
 
     @Override
@@ -60,12 +64,17 @@ public class StatsCollector implements ApplicationComponent {
         xps = new Hashtable<>();
 
         // Add the status bar icon to the statusbar of all projects when they are loaded
-        statusBarIcon = new StatusBarIcon();
         ProjectManager.getInstance().addProjectManagerListener(new ProjectManagerListener() {
             @Override
             public void projectOpened(Project project) {
                 IdeFrame frame = WindowManager.getInstance().getIdeFrame(project);
-                frame.getStatusBar().addWidget(statusBarIcon);
+                StatusBar statusBar = frame.getStatusBar();
+
+                StatusBarIcon statusBarIcon = new StatusBarIcon(statusBarUniqueID.toString(), statusBar);
+
+                statusBar.addWidget(statusBarIcon);
+                statusBarIcons.put(project, statusBarIcon);
+                statusBarUniqueID += 1;
             }
 
             @Override
@@ -77,7 +86,11 @@ public class StatsCollector implements ApplicationComponent {
             public void projectClosed(Project project) {}
 
             @Override
-            public void projectClosing(Project project) {}
+            public void projectClosing(Project project) {
+                IdeFrame frame = WindowManager.getInstance().getIdeFrame(project);
+                frame.getStatusBar().removeWidget(statusBarIcons.get(project).ID());
+                statusBarIcons.remove(project);
+            }
         });
 
         // Set up keyhandler that will send us keypresses
@@ -130,7 +143,7 @@ public class StatsCollector implements ApplicationComponent {
         task.setXpsLock(xps_lock);
         task.setXps(xps);
         task.setConfig(apiURL, apiKey);
-        task.setStatusBarIcon(statusBarIcon);
+        task.setStatusBarIcons(statusBarIcons);
         updateTimer = executor.schedule(task, UPDATE_TIMER, TimeUnit.SECONDS);
     }
 
