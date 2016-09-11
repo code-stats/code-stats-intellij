@@ -3,14 +3,18 @@ import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import com.intellij.openapi.project.Project;
 
-import java.io.IOException;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Task that sends the update to the Code::Stats servers.
@@ -22,6 +26,7 @@ public class UpdateTask implements Runnable {
     private String apiURL;
     private String apiKey;
     private Hashtable<Project, StatusBarIcon> statusBarIcons;
+    private SSLContext context;
 
     @Override
     public void run() {
@@ -37,6 +42,14 @@ public class UpdateTask implements Runnable {
             final String API_TOKEN = apiKey;
 
             HttpURLConnection conn = (HttpURLConnection) API_URL.openConnection();
+
+            try {
+                // If we are dealing with an HTTPS connection, set the SSL context
+                // If it's not an HTTPS connection, this cast will throw
+                ((HttpsURLConnection) conn).setSSLSocketFactory(context.getSocketFactory());
+            }
+            catch (ClassCastException ignored) {}
+
             conn.setDoOutput(true);
             conn.setDoInput(true);
             conn.setRequestMethod("POST");
@@ -71,8 +84,19 @@ public class UpdateTask implements Runnable {
 
                 statusBarIcons.values().forEach(StatusBarIcon::clear);
             }
+            else if (conn.getResponseCode() == 403) {
+                // The API key was wrong when updating
+                for (StatusBarIcon statusBarIcon : statusBarIcons.values()) {
+                    statusBarIcon.setError("Unauthorized. Please check that your API key is valid.");
+                }
+            }
+            else {
+                for (StatusBarIcon statusBarIcon : statusBarIcons.values()) {
+                    statusBarIcon.setError("Unknown status code when updating: " + String.valueOf(conn.getResponseCode()));
+                }
+            }
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             for (StatusBarIcon statusBarIcon : statusBarIcons.values()) {
                 statusBarIcon.setError(e.toString());
@@ -95,5 +119,9 @@ public class UpdateTask implements Runnable {
 
     public void setStatusBarIcons(Hashtable<Project, StatusBarIcon> statusBarIcons) {
         this.statusBarIcons = statusBarIcons;
+    }
+
+    public void setSSLContext(SSLContext context) {
+        this.context = context;
     }
 }

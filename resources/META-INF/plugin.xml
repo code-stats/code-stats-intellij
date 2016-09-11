@@ -1,7 +1,7 @@
 <idea-plugin version="2">
   <id>net.codestats.plugin.atom.intellij</id>
   <name>Code::Stats</name>
-  <version>1.0.2</version>
+  <version>1.0.3</version>
   <vendor email="mikko.ahlroth@gmail.com" url="https://codestats.net/">CodeStats</vendor>
 
   <description><![CDATA[
@@ -9,7 +9,10 @@
     ]]></description>
 
   <change-notes><![CDATA[
-  <h1>1.0.2</h1>
+  <h1>1.0.3</h1>
+  <p>Make the last fix even better and add some nicer error output for user.</p>
+
+  <h1>1.0.2 (unreleased)</h1>
   <p>Attempt to fix certificate errors caused by Java not having the Letsencrypt certificates in the trust store by default.</p>
 
   <h1>1.0.1</h1>

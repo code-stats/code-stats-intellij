@@ -50,6 +50,8 @@ public class StatsCollector implements ApplicationComponent {
     private Integer statusBarUniqueID;
     private Hashtable<Project, StatusBarIcon> statusBarIcons;
 
+    private SSLContext context;
+
     public StatsCollector() {
         propertiesComponent = PropertiesComponent.getInstance();
         statusBarIcons = new Hashtable<>();
@@ -104,7 +106,7 @@ public class StatsCollector implements ApplicationComponent {
         handler.setStatsCollector(this);
         typedAction.setupHandler(handler);
 
-        installLECACert();
+        context = installLECACert();
     }
 
     @Override
@@ -145,6 +147,7 @@ public class StatsCollector implements ApplicationComponent {
         task.setXps(xps);
         task.setConfig(apiURL, apiKey);
         task.setStatusBarIcons(statusBarIcons);
+        task.setSSLContext(context);
         updateTimer = executor.schedule(task, UPDATE_TIMER, TimeUnit.SECONDS);
     }
 
@@ -159,7 +162,9 @@ public class StatsCollector implements ApplicationComponent {
 
     // Both ISRG root X1 and DST root X3 are added, because we might not know which one has signed our LE certificate in
     // the future.
-    private void installLECACert() {
+
+    // Returns the SSL context to use in HTTPS requests
+    private SSLContext installLECACert() {
         try {
             KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
             Path ksPath = Paths.get(System.getProperty("java.home"),
@@ -199,9 +204,7 @@ public class StatsCollector implements ApplicationComponent {
             tmf.init(keyStore);
             SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(null, tmf.getTrustManagers(), null);
-            SSLContext.setDefault(sslContext);
-
-            HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
+            return sslContext;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
