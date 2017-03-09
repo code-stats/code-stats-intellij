@@ -15,6 +15,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.TimeZone;
 
 /**
  * Task that sends the update to the Code::Stats servers.
@@ -64,8 +65,8 @@ public class UpdateTask implements Runnable {
                 xps_json.add(Json.object().add("language", xp.getKey()).add("xp", xp.getValue()));
             }
 
-            final String now = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssX")
-                    .withZone(ZoneOffset.UTC)
+            final String now = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX")
+                    .withZone(TimeZone.getDefault().toZoneId())
                     .format(Instant.now());
 
             JsonObject output = Json.object();

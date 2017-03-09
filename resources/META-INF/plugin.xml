@@ -1,7 +1,7 @@
 <idea-plugin version="2">
   <id>net.codestats.plugin.atom.intellij</id>
   <name>Code::Stats</name>
-  <version>1.0.3</version>
+  <version>1.0.4</version>
   <vendor email="mikko.ahlroth@gmail.com" url="https://codestats.net/">CodeStats</vendor>
 
   <description><![CDATA[
@@ -9,6 +9,9 @@
     ]]></description>
 
   <change-notes><![CDATA[
+  <h1>1.0.4</h1>
+  <p>Send local time offset with timestamp when coding. This will be used in graphs on the website later.</p>
+
   <h1>1.0.3</h1>
   <p>Make the last fix even better and add some nicer error output for user.</p>
 
