@@ -1,16 +1,14 @@
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
-import com.intellij.openapi.project.Project;
+import com.intellij.openapi.wm.IdeFrame;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -26,7 +24,7 @@ public class UpdateTask implements Runnable {
     private Object xpsLock;
     private String apiURL;
     private String apiKey;
-    private Hashtable<Project, StatusBarIcon> statusBarIcons;
+    private Hashtable<IdeFrame, StatusBarIcon> statusBarIcons;
     private SSLContext context;
 
     @Override
@@ -118,7 +116,7 @@ public class UpdateTask implements Runnable {
         this.apiKey = apiKey;
     }
 
-    public void setStatusBarIcons(Hashtable<Project, StatusBarIcon> statusBarIcons) {
+    public void setStatusBarIcons(Hashtable<IdeFrame, StatusBarIcon> statusBarIcons) {
         this.statusBarIcons = statusBarIcons;
     }
 

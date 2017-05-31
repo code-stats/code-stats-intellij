@@ -1,28 +1,31 @@
-<idea-plugin version="2">
+<idea-plugin>
   <id>net.codestats.plugin.atom.intellij</id>
   <name>Code::Stats</name>
-  <version>1.0.4</version>
+  <version>1.0.5</version>
   <vendor email="mikko.ahlroth@gmail.com" url="https://codestats.net/">CodeStats</vendor>
 
   <description><![CDATA[
-      Code::Stats plugin for the IntelliJ/JetBrains range of IDEs.
-    ]]></description>
+    Code::Stats plugin for the IntelliJ/JetBrains range of IDEs.
+  ]]></description>
 
   <change-notes><![CDATA[
-  <h1>1.0.4</h1>
-  <p>Send local time offset with timestamp when coding. This will be used in graphs on the website later.</p>
+    <h1>1.0.5</h1>
+    <p>Fix crash in opening new windows on new IDE versions.</p>
 
-  <h1>1.0.3</h1>
-  <p>Make the last fix even better and add some nicer error output for user.</p>
+    <h1>1.0.4</h1>
+    <p>Send local time offset with timestamp when coding. This will be used in graphs on the website later.</p>
 
-  <h1>1.0.2 (unreleased)</h1>
-  <p>Attempt to fix certificate errors caused by Java not having the Letsencrypt certificates in the trust store by default.</p>
+    <h1>1.0.3</h1>
+    <p>Make the last fix even better and add some nicer error output for user.</p>
 
-  <h1>1.0.1</h1>
-  <p>Fixed an issue where the plugin would crash when closing a project and opening a new one.</p>
+    <h1>1.0.2 (unreleased)</h1>
+    <p>Attempt to fix certificate errors caused by Java not having the Letsencrypt certificates in the trust store by default.</p>
 
-  <h1>1.0</h1>
-  <p>Initial version</p>
+    <h1>1.0.1</h1>
+    <p>Fixed an issue where the plugin would crash when closing a project and opening a new one.</p>
+
+    <h1>1.0</h1>
+    <p>Initial version</p>
   ]]>
   </change-notes>
 

@@ -4,15 +4,12 @@ import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.editor.actionSystem.EditorActionManager;
 import com.intellij.openapi.editor.actionSystem.TypedAction;
 import com.intellij.openapi.editor.actionSystem.TypedActionHandler;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
-import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.wm.IdeFrame;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.WindowManager;
+import com.intellij.openapi.wm.WindowManagerListener;
 import org.jetbrains.annotations.NotNull;
 
-import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.BufferedInputStream;
@@ -48,7 +45,7 @@ public class StatsCollector implements ApplicationComponent {
     private String apiKey;
 
     private Integer statusBarUniqueID;
-    private Hashtable<Project, StatusBarIcon> statusBarIcons;
+    private Hashtable<IdeFrame, StatusBarIcon> statusBarIcons;
 
     private SSLContext context;
 
@@ -66,33 +63,29 @@ public class StatsCollector implements ApplicationComponent {
         executor = Executors.newScheduledThreadPool(1);
         xps = new Hashtable<>();
 
-        // Add the status bar icon to the statusbar of all projects when they are loaded
-        ProjectManager.getInstance().addProjectManagerListener(new ProjectManagerListener() {
+        // Add the status bar icon to the statusbar of all windows when they are opened
+        WindowManager.getInstance().addListener(new WindowManagerListener() {
             @Override
-            public void projectOpened(Project project) {
-                IdeFrame frame = WindowManager.getInstance().getIdeFrame(project);
-                StatusBar statusBar = frame.getStatusBar();
+            public void frameCreated(IdeFrame ideFrame) {
+                StatusBar statusBar = ideFrame.getStatusBar();
+
+                if (statusBar == null) {
+                    return;
+                }
 
                 StatusBarIcon statusBarIcon = new StatusBarIcon(statusBarUniqueID.toString(), statusBar);
 
                 statusBar.addWidget(statusBarIcon);
-                statusBarIcons.put(project, statusBarIcon);
+                statusBarIcons.put(ideFrame, statusBarIcon);
                 statusBarUniqueID += 1;
             }
 
             @Override
-            public boolean canCloseProject(Project project) {
-                return true;
-            }
-
-            @Override
-            public void projectClosed(Project project) {}
-
-            @Override
-            public void projectClosing(Project project) {
-                IdeFrame frame = WindowManager.getInstance().getIdeFrame(project);
-                frame.getStatusBar().removeWidget(statusBarIcons.get(project).ID());
-                statusBarIcons.remove(project);
+            public void beforeFrameReleased(IdeFrame ideFrame) {
+                if (statusBarIcons.containsKey(ideFrame)) {
+                    ideFrame.getStatusBar().removeWidget(statusBarIcons.get(ideFrame).ID());
+                    statusBarIcons.remove(ideFrame);
+                }
             }
         });
 

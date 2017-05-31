@@ -1,16 +1,11 @@
-import com.intellij.openapi.wm.IdeFrame;
 import com.intellij.openapi.wm.StatusBar;
 import com.intellij.openapi.wm.StatusBarWidget;
-import com.intellij.openapi.wm.WindowManager;
 import com.intellij.util.Consumer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.event.MouseEvent;
 
-/**
- * Created by nicd on 03/06/16.
- */
 public class StatusBarIcon implements StatusBarWidget {
     public static final String STATUS_BAR_ID_PREFIX = "code-stats-intellij-status-bar-icon-";
 
